@@ -3,7 +3,7 @@
  *
  * Author:   Torstein Honsi
  * Licence:  MIT
- * Version:  1.4.7
+ * Version:  1.4.6
  */
 /*global Highcharts, window, document, Blob */
 (function (factory) {
@@ -51,7 +51,7 @@
                     return (item.options.title && item.options.title.text) ||
                         (item.isDatetimeAxis ? 'DateTime' : 'Category');
                 }
-                return item ? 
+                return item ?
                     item.name + (keyLength > 1 ? ' ('+ key + ')' : '') :
                     'Category';
             },
@@ -68,21 +68,20 @@
                 xAxisIndex = Highcharts.inArray(series.xAxis, xAxes),
                 j;
 
+            // Build a lookup for X axis index and the position of the first
+            // series that belongs to that X axis. Includes -1 for non-axis
+            // series types like pies.
+            if (!xAxisIndices.find(function (index) {
+                return index[0] === xAxisIndex;
+            })) {
+                xAxisIndices.push([xAxisIndex, i]);
+            }
             // Map the categories for value axes
             each(pointArrayMap, function (prop) {
                 categoryMap[prop] = (series[prop + 'Axis'] && series[prop + 'Axis'].categories) || [];
             });
 
             if (series.options.includeInCSVExport !== false && series.visible !== false) { // #55
-
-                // Build a lookup for X axis index and the position of the first
-                // series that belongs to that X axis. Includes -1 for non-axis
-                // series types like pies.
-                if (!Highcharts.find(xAxisIndices, function (index) {
-                    return index[0] === xAxisIndex;
-                })) {
-                    xAxisIndices.push([xAxisIndex, i]);
-                }
 
                 // Add the column headers, usually the same as series names
                 j = 0;
@@ -106,7 +105,7 @@
                     }
                     rows[key].x = point.x;
                     rows[key].xValues[xAxisIndex] = point.x;
-                    
+
                     // Pies, funnels, geo maps etc. use point name in X row
                     if (!series.xAxis || series.exportKey === 'name') {
                         rows[key].name = point.name;
@@ -172,6 +171,7 @@
                 }
 
                 // Add the X/date/category
+                category = category === row.x || category === 'null' ? '' : category;
                 row.splice(column, 0, category);
             });
         }
@@ -254,7 +254,7 @@
             if (!i) {
                 html += '</thead><tbody>';
             }
-            
+
         });
         html += '</tbody></table>';
 
@@ -331,7 +331,7 @@
                 '</head><body>' +
                 this.getTable(true) +
                 '</body></html>',
-            base64 = function (s) { 
+            base64 = function (s) {
                 return window.btoa(unescape(encodeURIComponent(s))); // #50
             };
         getContent(
@@ -350,7 +350,7 @@
         if (!this.dataTableDiv) {
             this.dataTableDiv = document.createElement('div');
             this.dataTableDiv.className = 'highcharts-data-table';
-            
+
             // Insert after the chart container
             this.renderTo.parentNode.insertBefore(
                 this.dataTableDiv,
@@ -384,9 +384,6 @@
     }
     if (seriesTypes.mapbubble) {
         seriesTypes.mapbubble.prototype.exportKey = 'name';
-    }
-    if (seriesTypes.treemap) {
-        seriesTypes.treemap.prototype.exportKey = 'name';
     }
 
 });
